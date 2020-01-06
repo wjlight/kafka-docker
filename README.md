@@ -7,6 +7,8 @@
 kafka-docker
 ============
 
+https://github.com/wurstmeister/kafka-docker
+
 Dockerfile for [Apache Kafka](http://kafka.apache.org/)
 
 The image is available directly from [Docker Hub](https://hub.docker.com/r/wurstmeister/kafka/)
@@ -55,11 +57,50 @@ Start a cluster:
 
 Add more brokers:
 
-- ```docker-compose scale kafka=3```
+- ```docker-compose up --scale kafka=3```
 
 Destroy a cluster:
 
 - ```docker-compose stop```
+
+单个broker：
+
+# KAFKA_ADVERTISED_HOST_NAME: localhost
+# ZOOKEEPER_CONNECT: zookeeper:2181
+docker-compose -f docker-compose-single-broker.yml up -d
+
+# 连接访问方式说明
+https://github.com/wurstmeister/kafka-docker/wiki/Connectivity
+
+### 操作kafka
+1. docker exec -it 34ecbe0751d5 /bin/bash  进入到指定的kafka 容器中
+2. cd /opt/kafka/bin
+#### 创建topic
+
+* ./kafka-topics.sh --create --zookeeper 10.13.146.251:2181 --replication-factor 3 --partitions 1 --topic test666
+
+#### 查看topic状态：
+
+*  ./kafka-topics.sh --describe --zookeeper 10.13.146.251:2181 --topic test666
+
+#### 往test666中发送消息
+
+*  ./kafka-console-producer.sh --broker-list 10.13.146.251:9091,10.13.146.251:9092,10.13.146.251:9093 --topic test666
+
+#### 接收消息：
+
+*  ./kafka-console-consumer.sh --bootstrap-server 172.31.96.4:9091,172.31.96.4:9092,172.31.96.4:9093 --topic test666 --from-beginning
+
+
+### 进入zookeeper
+
+1. docker exec -it 34ecbe0751d5 /bin/bash  进入到指定的zookeeper 容器中
+2. cd ./bin/   &&   ./zkCli.sh -server 172.18.0.4:2181
+3. ls /  查看目录情况
+
+### 查看容器内网ip
+
+docker inspect -f '{{.Name}} - {{range .NetworkSettings.Networks}}{{.IPAddress}}{{end}}' $(docker ps -aq)
 
 ## Note
 
